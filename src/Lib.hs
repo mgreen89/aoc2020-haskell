@@ -48,7 +48,7 @@ libmain = do
   runDay 4 id [ day4a, day4b ] -- Not done day 4 (not really my jam)
   runDay 5 (print <=< checkRight) [ day5a, day5b ]
   runDay 6 print [ day6a, day6b ]
-  runDay 7 print [ day7a, day7b ] -- Not done (vectors)
+  runDay 7 (print <=< checkRight) [ day7a, day7b ]
   runDay 8 (print <=< checkRight) [ day8a, day8b ]
   runDay 9 print [ day9a, day9b ] -- Not done (vectors)
   runDay 10 print [ day10a, day10b ]
