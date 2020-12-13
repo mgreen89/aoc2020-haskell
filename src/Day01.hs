@@ -1,32 +1,40 @@
-module Day01 (day1a, day1b) where
+module Day01
+  ( day1a
+  , day1b
+  )
+where
 
-import Data.IntSet (IntSet)
-import qualified Data.IntSet as IntSet (elems, fromList, member, split)
+import           Data.IntSet                    ( IntSet )
+import qualified Data.IntSet                   as IntSet
+                                                ( elems
+                                                , fromList
+                                                , member
+                                                , split
+                                                )
 
 getIntSet :: String -> IntSet
-getIntSet input =
-  IntSet.fromList $ map read $ lines input
+getIntSet = IntSet.fromList . map read . lines
 
-day1a :: String -> IO ()
-day1a input = do
+day1a :: String -> Int
+day1a input =
   let ints = getIntSet input
-  let p = [ x * y
-          | x <- IntSet.elems ints
-          , let (_, rest) = IntSet.split x ints
-                y = 2020 - x
-          , IntSet.member y rest
-          ]
-  print p
+  in  head
+        [ x * y
+        | x <- IntSet.elems ints
+        , let (_, rest) = IntSet.split x ints
+              y         = 2020 - x
+        , IntSet.member y rest
+        ]
 
-day1b :: String -> IO ()
-day1b input = do
+day1b :: String -> Int
+day1b input =
   let ints = getIntSet input
-  let p = [ x * y * z
-          | x <- IntSet.elems ints
-          , let (_, rest) = IntSet.split x ints
-          , y <- IntSet.elems rest
-          , let (_, rest') = IntSet.split y rest
-                z = 2020 - x - y
-          , IntSet.member z rest'
-          ]
-  print p
+  in head
+        [ x * y * z
+        | x <- IntSet.elems ints
+        , let (_, rest) = IntSet.split x ints
+        , y <- IntSet.elems rest
+        , let (_, rest') = IntSet.split y rest
+              z          = 2020 - x - y
+        , IntSet.member z rest'
+        ]

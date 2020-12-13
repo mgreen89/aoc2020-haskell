@@ -11,12 +11,10 @@ import           Data.Maybe                     ( catMaybes
 import           Data.Map                       ( Map )
 import qualified Data.Map                      as M
 
-
 type Point = (Int, Int)
 
 addPoint :: Point -> Point -> Point
 addPoint (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)
-
 
 parse :: String -> Map Point Bool
 parse input = M.fromList $ do
@@ -39,7 +37,7 @@ getLineOfSightNeighbours field point =
   let maxX = maximum . fmap fst . M.keys $ field
       maxY = maximum . fmap snd . M.keys $ field
       getNext start delta =
-          find (flip M.member field)
+          find (`M.member` field)
             . takeWhile (\(x, y) -> x >= 0 && x <= maxX && y >= 0 && y <= maxY)
             . drop 1
             . iterate (addPoint delta)
@@ -51,10 +49,8 @@ generateSlow :: Int -> (Point -> [Point]) -> Map Point Bool -> Map Point Bool
 generateSlow threshold getNs seats = M.mapWithKey go seats where
   go point val =
     let neighbourCount =
-            length . filter id . catMaybes $ (seats M.!?) <$> (getNs point)
-    in  case val of
-          False -> neighbourCount == 0
-          True  -> neighbourCount < threshold
+            length . filter id . catMaybes $ (seats M.!?) <$> getNs point
+    in  if val then neighbourCount == 0 else neighbourCount < threshold
 
 -- Try passing in a mapping of neighbours since it doesn't change for each iteration
 -- and using the mapping intersection which should be more efficient.
@@ -64,7 +60,7 @@ generate :: Int -> Map Point [Point] -> Map Point Bool -> Map Point Bool
 generate threshold neighbours seats = M.intersectionWith go neighbours seats where
   go :: [Point] -> Bool -> Bool
   go ns occupied = if occupied
-    then (length $ filter (seats M.!) ns) < threshold
+    then length (filter (seats M.!) ns) < threshold
     else not $ any (seats M.!) ns
 
 repeatUntilSame :: Eq a => (a -> a) -> a -> a
@@ -76,7 +72,7 @@ day11a :: String -> Int
 day11a input =
   let start      = parse input
       neighbours = M.mapWithKey
-        (\k v -> filter (flip M.member start) $ getNeighbours k)
+        (\k v -> filter (`M.member` start) $ getNeighbours k)
         start
       final = repeatUntilSame (generate 4 neighbours) start
   in  length . filter id . fmap snd . M.toList $ final

@@ -4,9 +4,7 @@ module Day12
   )
 where
 
-
-import           Data.List                      ( foldl' )
-
+import           Data.Foldable                  ( foldl' )
 
 -- Take the point definitions from the previous day.
 -- there must be a better option!

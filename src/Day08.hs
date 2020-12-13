@@ -4,12 +4,11 @@ module Day08
   )
 where
 
-import           Debug.Trace                    ( trace )
-
 import qualified Data.Bifunctor                as B
+import           Data.Foldable                  ( foldl' )
+
 import           Data.IntSet                    ( IntSet )
 import qualified Data.IntSet                   as IS
-import           Data.List                      ( foldl' )
 import           Data.Vector                    ( Vector )
 import qualified Data.Vector                   as V
 import           Data.Void                      ( Void )

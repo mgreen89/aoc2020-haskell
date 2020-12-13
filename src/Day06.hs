@@ -4,7 +4,6 @@ module Day06
   )
 where
 
-import           Control.Monad                  ( foldM )
 import           Data.Bits                      ( popCount
                                                 , shiftL
                                                 , (.|.)
@@ -17,7 +16,7 @@ import           Data.List                      ( sort )
 -- subtract 97 to get 0, 1, 2 etc...
 -- Can use this to populate a bitfield for the lowercase alphabet.
 lineToBitField :: String -> Int
-lineToBitField s = foldl f 0 s where f acc c = acc .|. 1 `shiftL` (ord c - 97)
+lineToBitField = foldl f 0 where f acc c = acc .|. 1 `shiftL` (ord c - 97)
 
 -- Can use the fact that lineToBitField will return 0 on a empty line to
 -- work out when each entry has finished.

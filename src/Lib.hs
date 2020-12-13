@@ -42,9 +42,9 @@ runDay day output parts = do
 
 libmain :: IO ()
 libmain = do
-  runDay 1 id [ day1a, day1b ]
-  runDay 2 id [ day2a, day2b ]
-  runDay 3 id [ day3a, day3b ]
+  runDay 1 print [ day1a, day1b ]
+  runDay 2 (print <=< checkRight) [ day2a, day2b ]
+  runDay 3 print [ day3a, day3b ]
   runDay 4 id [ day4a, day4b ] -- Not done day 4 (not really my jam)
   runDay 5 (print <=< checkRight) [ day5a, day5b ]
   runDay 6 print [ day6a, day6b ]

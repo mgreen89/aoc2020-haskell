@@ -4,21 +4,17 @@ module Day13
   )
 where
 
-import           Debug.Trace                    ( trace )
-
-import           Data.List                      ( foldl1'
+import           Data.Foldable                  ( foldl1
                                                 , minimumBy
                                                 )
 import           Data.List.Split                ( splitOn )
 import           Data.Ord                       ( comparing )
-
 
 parsea :: String -> Either String (Int, [Int])
 parsea input = case splitOn "\n" input of
   tgt : ids : [] ->
     Right (read tgt, fmap read . filter (/= "x") . splitOn "," $ ids)
   i -> Left $ "Invalid input: " ++ show i
-
 
 day13a :: String -> Either String Int
 day13a input = do
@@ -40,9 +36,8 @@ parseb input = case splitOn "\n" input of
       $ ids
   i -> Left $ "Invalid input: " ++ show i
 
-
 {-
-Stating with the example, first three entries are (0, 7), (1, 13), (4, 59).
+Starting with the example, first three entries are (0, 7), (1, 13), (4, 59).
 
 These restrictions can be stated as:
 
@@ -53,7 +48,7 @@ These restrictions can be stated as:
 Obviously iterating to over 100 trillion is not an option.
 Is there a short cut? (yes... obviously)
 
-Starting with just the first two, can triviall find the answer 77:
+Starting with just the first two, can trivially find the answer 77:
 
   77 `rem` 7 == 0 (./)
   (77 + 1) `rem` 13 == 0 (./)
@@ -70,9 +65,8 @@ Starting with just the first two, can triviall find the answer 77:
   Then, once we've found the number that matches 59, we can just check
     new match + (7 * 13 * 59) * N.
 -}
-
 day13b :: String -> Either String Int
-day13b = fmap (fst . foldl1' go) . parseb where
+day13b = fmap (fst . foldl1 go) . parseb where
   go (match, step) (offset, busId) =
     ( head
       . filter (\x -> (x + offset) `rem` busId == 0)
