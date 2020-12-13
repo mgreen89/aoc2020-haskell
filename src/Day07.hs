@@ -18,6 +18,11 @@ import qualified Text.Megaparsec.Char.Lexer    as L
 
 type Bag = (String, String)
 
+-- Graph with vertices of type v and edges of type e.
+-- The rest of the solution assumes that the graph doesn't have any loops -
+-- otherwise the lazy evaulation will be _|_.
+type Graph v e = Map v (Map v e)
+
 bagParser :: Parsec Void String Bag
 bagParser = do
   desc   <- P.many P.lowerChar <* P.space
@@ -40,20 +45,20 @@ ruleParser = do
   _ <- P.string "."
   pure (outer, M.fromList inners)
 
-parseRules :: String -> Either String (Map Bag (Map Bag Int))
+parseRules :: String -> Either String (Graph Bag Int)
 parseRules =
   let rulesParser = M.fromList <$> P.sepEndBy ruleParser P.newline
   in  B.first show . P.runParser rulesParser "input"
 
-flipMap :: Map Bag (Map Bag Int) -> Map Bag (Map Bag Int)
-flipMap mp = M.fromListWith
+flipGraph :: Graph Bag Int -> Graph Bag Int
+flipGraph grph = M.fromListWith
   M.union
-  [ (inner, M.singleton outer count)
-  | (outer, inners) <- M.toList mp
-  , (inner, count ) <- M.toList inners
+  [ (dest, M.singleton src edge)
+  | (src , dests) <- M.toList grph
+  , (dest, edge ) <- M.toList dests
   ]
 
-allDescendants :: Map Bag (Map Bag Int) -> Map Bag (Set Bag)
+allDescendants :: Graph Bag Int -> Map Bag (Set Bag)
 allDescendants mp = descendants where
   descendants = M.foldMapWithKey mergeDescendants <$> mp
   mergeDescendants bag _ =
@@ -62,9 +67,10 @@ allDescendants mp = descendants where
 day7a :: String -> Either String Int
 day7a =
   let target = ("shiny", "gold")
-  in  fmap (S.size . flip (M.!) target . allDescendants . flipMap) . parseRules
+  in  fmap (S.size . flip (M.!) target . allDescendants . flipGraph)
+        . parseRules
 
-countAllDescendants :: Map Bag (Map Bag Int) -> Map Bag Int
+countAllDescendants :: Graph Bag Int -> Map Bag Int
 countAllDescendants mp = descendantCounts where
   descendantCounts = sumRecurse <$> mp
   sumRecurse inners = sum
