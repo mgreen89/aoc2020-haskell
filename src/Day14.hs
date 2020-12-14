@@ -4,6 +4,7 @@ module Day14
   )
 where
 
+import           Control.Monad                  ( foldM )
 import qualified Data.Bifunctor                as B
 import           Data.Bits                      ( clearBit
                                                 , setBit
@@ -74,5 +75,19 @@ day14a = fmap (sum . snd . foldl' go ([], IM.empty)) . parseInstrs where
     Mask newMask    -> (newMask, im)
     Mem  (loc, val) -> (currMask, IM.insert loc (mask val currMask) im)
 
+
+-- Use the list monad as a "choice"
+mask' :: Int -> [Maybe Bool] -> [Int]
+mask' v = foldM go v . zip [0 ..] where
+  go v (idx, mb) = case mb of
+    Just True  -> [setBit v idx]
+    Just False -> [v]
+    Nothing    -> [setBit v idx, clearBit v idx]
+
 day14b :: String -> Either String Int
-day14b i = Left "Not implemented"
+day14b = fmap (sum . snd . foldl' go ([], IM.empty)) . parseInstrs where
+  go (currMask, im) instr = case instr of
+    Mask newMask -> (newMask, im)
+    Mem (loc, val) ->
+      let newMem = IM.fromList ((\a -> (a, val)) <$> mask' loc currMask)
+      in  (currMask, IM.union newMem im)
