@@ -5,8 +5,8 @@ module Day14
 where
 
 import qualified Data.Bifunctor                as B
-import           Data.Bits                      ( (.|.)
-                                                , (.&.)
+import           Data.Bits                      ( clearBit
+                                                , setBit
                                                 )
 import           Data.Char                      ( digitToInt )
 import           Data.Foldable                  ( foldl' )
@@ -19,31 +19,36 @@ import qualified Text.Megaparsec.Char.Lexer    as L
 
 
 {-
-The masking can be done as two bitwise operations:
+The masking for part a can be done as two bitwise operations:
   - a bitwise & where all the X elements are 1.
   - a bitwise | where all the X elements are 0.
+
+Part b is a bit more complex, so reworked the mask to be a list of
+'Maybe Bool', where:
+  - Just True  : the bit should be overridden 1
+  - Just False : the bit should be overridden to 0
+  - Nothing    : the bit shouldn't be changed (part a) or is floating (part b)
 -}
 
-toDec :: String -> Int
-toDec = foldl' (\acc x -> acc * 2 + digitToInt x) 0
 
-replaceXWith :: Char -> String -> String
-replaceXWith r input =
-  let replace 'X' = r
-      replace c   = c
-  in  fmap replace input
-
-
-data Instr = Mask (Int, Int)
+data Instr = Mask [Maybe Bool]
            | Mem (Int, Int)
   deriving (Show)
 
 instrParser :: P.Parsec Void String Instr
 instrParser = P.choice
   [ Mask <$> do
-    _ <- P.string "mask = "
-    b <- P.many P.alphaNumChar
-    pure (toDec . replaceXWith '0' $ b, toDec . replaceXWith '1' $ b)
+    _    <- P.string "mask = "
+    mask <- P.many
+      (P.choice
+        [ Just True <$ P.char '1'
+        , Just False <$ P.char '0'
+        , Nothing <$ P.char 'X'
+        ]
+      )
+      -- Mask list needs reversing so the list goes from lowest to highest
+      -- value bit.
+    pure (reverse mask)
   , Mem <$> do
     _    <- P.string "mem["
     addr <- L.decimal
@@ -56,12 +61,18 @@ parseInstrs :: String -> Either String [Instr]
 parseInstrs = B.first P.errorBundlePretty
   . P.parse (P.sepEndBy instrParser P.newline) "input"
 
+mask :: Int -> [Maybe Bool] -> Int
+mask v = foldl' go v . zip [0 ..] where
+  go v (idx, mb) = case mb of
+    Just True  -> setBit v idx
+    Just False -> clearBit v idx
+    Nothing    -> v
+
 day14a :: String -> Either String Int
-day14a = fmap (sum . snd . foldl' go ((0, -1), IM.empty)) . parseInstrs where
+day14a = fmap (sum . snd . foldl' go ([], IM.empty)) . parseInstrs where
   go (currMask, im) instr = case instr of
-    Mask (orMask, andMask) -> ((orMask, andMask), im)
-    Mem (loc, val) ->
-      (currMask, IM.insert loc ((val .|. fst currMask) .&. snd currMask) im)
+    Mask newMask    -> (newMask, im)
+    Mem  (loc, val) -> (currMask, IM.insert loc (mask val currMask) im)
 
 day14b :: String -> Either String Int
 day14b i = Left "Not implemented"
