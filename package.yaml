@@ -29,6 +29,9 @@ dependencies:
 library:
   source-dirs: src
 
+default-extensions:
+  - TupleSections
+
 executables:
   aoc2020-haskell-exe:
     main:                Main.hs

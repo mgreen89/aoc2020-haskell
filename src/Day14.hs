@@ -89,5 +89,5 @@ day14b = fmap (sum . snd . foldl' go ([], IM.empty)) . parseInstrs where
   go (currMask, im) instr = case instr of
     Mask newMask -> (newMask, im)
     Mem (loc, val) ->
-      let newMem = IM.fromList ((\a -> (a, val)) <$> mask' loc currMask)
+      let newMem = IM.fromList ((, val) <$> mask' loc currMask)
       in  (currMask, IM.union newMem im)
