@@ -13,6 +13,7 @@ import Day10 (day10a, day10b)
 import Day11 (day11a, day11b)
 import Day12 (day12a, day12b)
 import Day13 (day13a, day13b)
+import Day14 (day14a, day14b)
 
 
 import Control.Monad ((<=<), when)
@@ -55,3 +56,4 @@ libmain = do
   runDay 11 print [ day11a, day11b ] -- (takes a while on repl.it)
   runDay 12 print [ day12a, day12b ]
   runDay 13 (print <=< checkRight) [ day13a, day13b ]
+  runDay 14 (print <=< checkRight) [ day14a, day14b ]
