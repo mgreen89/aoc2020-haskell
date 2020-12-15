@@ -16,13 +16,8 @@ parseEntry p =
              k : v : [] -> Just (k, v)
              _ -> Nothing
 --}
-day4a :: String -> IO ()
-day4a input = do
-  --let inputs = splitOn "\n\n" input
-  --let passports = fmap parseEntry inputs
-  --print (take 1 passports)
-  print "day4a"
+day4a :: String -> Either String Int
+day4a input = Left "Not Implemented"
 
-day4b :: String -> IO ()
-day4b input = do
-  print "day4b"
+day4b :: String -> Either String Int
+day4b input = Left "Not Implemented"

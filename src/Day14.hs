@@ -27,7 +27,7 @@ The masking for part a can be done as two bitwise operations:
 Part b is a bit more complex, so reworked the mask to be a list of
 'Maybe Bool', where:
   - Just True  : the bit should be overridden 1
-  - Just False : the bit should be overridden to 0
+  - Just False : the bit should be overridden to 0 (part a) or unchanged (part b)
   - Nothing    : the bit shouldn't be changed (part a) or is floating (part b)
 -}
 

@@ -50,10 +50,12 @@ import           Day15                          ( day15a
                                                 )
 
 
+import           Control.DeepSeq                ( NFData )
 import           Control.Monad                  ( (<=<)
                                                 , when
                                                 )
 import           Control.Monad.Fail             ( MonadFail )
+import           Criterion
 import           Data.Maybe                     ( mapMaybe )
 import           System.Environment             ( getArgs )
 import           Text.Printf
@@ -69,13 +71,16 @@ checkRight = either fail return
 checkJust :: MonadFail m => Maybe a -> m a
 checkJust = maybe (fail "Failed!") return
 
-runDay :: Int -> (a -> IO ()) -> [String -> a] -> IO ()
+runDay :: NFData a => Int -> (a -> IO ()) -> [String -> a] -> IO ()
 runDay day output parts = do
   days <- mapMaybe readMaybe <$> getArgs
   when (null days || day `elem` days) $ do
     putStrLn $ "Day " ++ show day
     contents <- getDayInput day
+    --putStrLn "Answers:"
     mapM_ (output . ($ contents)) parts
+    --putStrLn "\nBenchmarks:"
+    --mapM_ (\p -> benchmark (whnf p contents)) parts
     putStrLn ""
 
 libmain :: IO ()
@@ -83,7 +88,7 @@ libmain = do
   runDay 1  print                  [day1a, day1b]
   runDay 2  (print <=< checkRight) [day2a, day2b]
   runDay 3  print                  [day3a, day3b]
-  runDay 4  id                     [day4a, day4b] -- Not done day 4 (not really my jam)
+  runDay 4  (print <=< checkRight) [day4a, day4b] -- Not done day 4 (not really my jam)
   runDay 5  (print <=< checkRight) [day5a, day5b]
   runDay 6  print                  [day6a, day6b]
   runDay 7  (print <=< checkRight) [day7a, day7b]
