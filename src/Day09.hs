@@ -8,6 +8,7 @@ import Debug.Trace (trace)
 
 import           Data.List                      ( tails )
 import           Data.Maybe                     ( listToMaybe )
+import  qualified         Data.Vector   as V
 import           Control.Monad                  ( guard )
 
 parse :: String -> [Int]
@@ -34,5 +35,12 @@ day9b :: String -> Maybe Int
 day9b input = do
   let vals = parse input
   invalid <- findInvalid vals
-  --
-  Nothing
+  let valvec =  V.fromList vals
+      ans = go (0, 0, valvec V.! 0) where
+        go (i, j, tot) =
+          case compare tot invalid of
+            LT -> go (i, j + 1, tot + valvec V.! (j + 1))
+            EQ -> let slice = V.slice i (j - i + 1) valvec
+                  in (minimum slice + maximum slice)
+            GT -> go (i + 1, j, tot - valvec V.! i)
+  pure ans
