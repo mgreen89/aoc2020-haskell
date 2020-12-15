@@ -13,14 +13,16 @@ import           Data.List.Split                ( splitOn )
 parse :: String -> [Int]
 parse = fmap read . splitOn ","
 
-day15a :: String -> Either String Int
-day15a i =
-  let start       = parse i
-      curr : init = reverse start
+run :: Int -> [Int] -> Int
+run upTo initial =
+  let curr : init = reverse initial
       initialMap  = IM.fromList (zip (reverse init) [1 ..])
-      startTurn   = length start
-  in  Right . snd $ foldl' go (initialMap, curr) [startTurn .. 2019]
+      startTurn   = length initial
+  in  snd $ foldl' go (initialMap, curr) [startTurn .. (upTo - 1)]
   where go (mp, curr) i = (IM.insert curr i mp, maybe 0 (i -) $ mp IM.!? curr)
 
-day15b :: String -> Either String Int
-day15b i = Left "Not implemented"
+day15a :: String -> Int
+day15a = run 2020 . parse
+
+day15b :: String -> Int
+day15b = run 30000000 . parse
