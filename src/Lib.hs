@@ -45,6 +45,9 @@ import           Day13                          ( day13a
 import           Day14                          ( day14a
                                                 , day14b
                                                 )
+import           Day15                          ( day15a
+                                                , day15b
+                                                )
 
 
 import           Control.Monad                  ( (<=<)
@@ -91,3 +94,4 @@ libmain = do
   runDay 12 print                  [day12a, day12b]
   runDay 13 (print <=< checkRight) [day13a, day13b]
   runDay 14 (print <=< checkRight) [day14a, day14b]
+  runDay 15 (print <=< checkRight) [day15a, day15b]
