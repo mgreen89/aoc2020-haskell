@@ -104,31 +104,27 @@ day16b i = do
     -}
     loop candidates = case break ((== 1) . S.size . snd) candidates of
       (pref, (i, names) : rem) ->
+        -- Just checked this, but must be a better way than calling head!
         let name = head $ S.toList names
-          -- Just checked this, but must be a better way than calling head!
+        -- Sneaky use of a the 2-tuple functor that only changes the
+        -- second element.
         in  (i, name) : loop (fmap (S.delete name) <$> (pref ++ rem))
       _ -> []
 
     -- Find the sets of all possible fields for all valid tickets.
-    allPossibleFields =
-      fmap possibleFields <$> validTickets
+    allPossibleFields   = fmap possibleFields <$> validTickets
 
     -- Combine the sets generated above into one set per field.
-    zippedPossibleFields =
-      foldl1' (zipWith S.intersection) allPossibleFields
+    possibleIndexFields = foldl1' (zipWith S.intersection) allPossibleFields
 
     -- Loop over the sets and get a list of (field index, field name) tuples.
-    fieldIndexes =
-      loop . zip [0 ..] $ zippedPossibleFields
+    indexFields         = loop . zip [0 ..] $ possibleIndexFields
 
     -- Turn my ticket into a vector for easy lookup.
-    mine = V.fromList (iMine info)
+    mine                = V.fromList (iMine info)
 
     -- Get the values of all fields starting with "departure".
     departureFields =
-      [ mine V.! i
-      | (i, name) <-fieldIndexes
-      , take 9 name == "departure"
-      ]
+      [ mine V.! i | (i, name) <- indexFields, take 9 name == "departure" ]
 
   pure $ product departureFields
