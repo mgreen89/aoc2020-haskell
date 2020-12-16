@@ -18,6 +18,7 @@ import           Control.Monad.ST               ( runST
 import           Data.Foldable                  ( foldl'
                                                 , for_
                                                 )
+import Data.Int (Int32)
 import           Data.IntMap                    ( IntMap )
 import qualified Data.IntMap                   as IM
 import           Data.List.Split                ( splitOn )
@@ -39,28 +40,33 @@ day15a :: String -> Int
 day15a = run 2020 . parse
 
 
-data LoopState = LS { lsIdx :: !Int , lsLast :: !Int }
+data LoopState = LS { lsIdx :: !Int32 , lsLast :: !Int }
 
-getNext :: MV.MVector s Int -> StateT LoopState (ST s) ()
+getNext :: MV.MVector s Int32 -> StateT LoopState (ST s) ()
 getNext vec = do
   LS idx last <- get
-  lastSeen    <- MV.read vec last
-  MV.write vec last idx
+  lastSeen    <- MV.unsafeRead vec last
+  MV.unsafeWrite vec last idx
   let next = if lastSeen == 0 then 0 else idx - lastSeen
-  put $ LS (idx + 1) next
+  put $ LS (idx + 1) (fromIntegral next)
+{-# INLINE getNext #-}
 
-setInitial :: MV.MVector s Int -> Int -> StateT LoopState (ST s) ()
+setInitial :: MV.MVector s Int32 -> Int -> StateT LoopState (ST s) ()
 setInitial vec val = do
   LS idx last <- get
   MV.unsafeWrite vec last idx
   put $ LS (idx + 1) val
+{-# INLINE setInitial #-}
 
 runMutable :: Int -> [Int] -> Int
 runMutable upTo initial = runST $ flip evalStateT (LS 0 0) $ do
-  v <- MV.replicate upTo (0 :: Int)
+  v <- MV.replicate upTo 0
   for_ initial (setInitial v)
-  whileM_ (gets ((< upTo) . lsIdx)) (getNext v)
+  whileM_ (gets ((< upTo32) . lsIdx)) (getNext v)
   gets lsLast
+  where
+    upTo32 :: Int32
+    upTo32 = fromIntegral upTo
 
 day15b :: String -> Int
 day15b = runMutable 30000000 . parse
