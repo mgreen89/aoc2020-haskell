@@ -24,7 +24,10 @@ dependencies:
 - criterion >= 1.5
 - deepseq >= 1.4
 - megaparsec >= 8.0
+- monad-loops >= 0.4
+- mtl >= 1.1
 - parsec >= 3.1
+- primitive >= 0.7
 - split >= 0.2
 - vector >= 0.12
 

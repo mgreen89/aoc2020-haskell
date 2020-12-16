@@ -4,10 +4,24 @@ module Day15
   )
 where
 
-import           Data.Foldable                  ( foldl' )
+import           Control.Monad.Loops            ( whileM_ )
+import           Control.Monad.Primitive        ( PrimState )
+import           Control.Monad.State.Strict     ( evalStateT
+                                                , get
+                                                , gets
+                                                , put
+                                                , StateT
+                                                )
+import           Control.Monad.ST               ( runST
+                                                , ST
+                                                )
+import           Data.Foldable                  ( foldl'
+                                                , for_
+                                                )
 import           Data.IntMap                    ( IntMap )
 import qualified Data.IntMap                   as IM
 import           Data.List.Split                ( splitOn )
+import qualified Data.Vector.Unboxed.Mutable   as MV
 
 
 parse :: String -> [Int]
@@ -24,5 +38,29 @@ run upTo initial =
 day15a :: String -> Int
 day15a = run 2020 . parse
 
+
+data LoopState = LS { lsIdx :: !Int , lsLast :: !Int }
+
+getNext :: MV.MVector s Int -> StateT LoopState (ST s) ()
+getNext vec = do
+  LS idx last <- get
+  lastSeen    <- MV.read vec last
+  MV.write vec last idx
+  let next = if lastSeen == 0 then 0 else idx - lastSeen
+  put $ LS (idx + 1) next
+
+setInitial :: MV.MVector s Int -> Int -> StateT LoopState (ST s) ()
+setInitial vec val = do
+  LS idx last <- get
+  MV.unsafeWrite vec last idx
+  put $ LS (idx + 1) val
+
+runMutable :: Int -> [Int] -> Int
+runMutable upTo initial = runST $ flip evalStateT (LS 0 0) $ do
+  v <- MV.replicate upTo (0 :: Int)
+  for_ initial (setInitial v)
+  whileM_ (gets ((< upTo) . lsIdx)) (getNext v)
+  gets lsLast
+
 day15b :: String -> Int
-day15b = run 30000000 . parse
+day15b = runMutable 30000000 . parse
