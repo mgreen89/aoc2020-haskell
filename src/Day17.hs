@@ -14,21 +14,12 @@ import           Data.Map.Strict                ( Map )
 import qualified Data.Map.Strict               as M
 
 
--- Must be a better way to commonize these parsers, but I don't know lenses.
-parseV3 :: String -> Set (V3 Int)
-parseV3 =
+parse :: (Num a, Enum a, Ord b) => (a -> a -> b) -> String -> Set b
+parse fn =
   S.fromList
     . concat
-    . zipWith (\y xs -> fmap (\(x, _) -> V3 x y 0) xs) [0 ..]
-    . fmap (filter (\(x, c) -> c == '#') . zip [0 ..])
-    . lines
-
-parseV4 :: String -> Set (V4 Int)
-parseV4 =
-  S.fromList
-    . concat
-    . zipWith (\y xs -> fmap (\(x, _) -> V4 x y 0 0) xs) [0 ..]
-    . fmap (filter (\(x, c) -> c == '#') . zip [0 ..])
+    . zipWith (\y xs -> fmap (\(x, _) -> fn x y) xs) [0 ..]
+    . fmap (filter (\(_, c) -> c == '#') . zip [0 ..])
     . lines
 
 getNeighbours
@@ -58,7 +49,7 @@ generate cubes =
     | otherwise        = if ns == 3 then S.insert c acc else acc
 
 day17a :: String -> Int
-day17a = S.size . (!! 6) . iterate generate . parseV3
+day17a = S.size . (!! 6) . iterate generate . parse (\x y -> V3 x y 0)
 
 day17b :: String -> Int
-day17b = S.size . (!! 6) . iterate generate . parseV4
+day17b = S.size . (!! 6) . iterate generate . parse (\x y -> V4 x y 0 0)
