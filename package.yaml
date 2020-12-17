@@ -23,6 +23,7 @@ dependencies:
 - containers >= 0.6
 - criterion >= 1.5
 - deepseq >= 1.4
+- linear
 - megaparsec >= 8.0
 - monad-loops >= 0.4
 - mtl >= 1.1
