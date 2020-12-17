@@ -4,15 +4,13 @@ module Day17
   )
 where
 
-
-import           Linear                         ( V3(..)
-                                                , V4(..)
-                                                )
 import           Data.Set                       ( Set )
 import qualified Data.Set                      as S
 import           Data.Map.Strict                ( Map )
 import qualified Data.Map.Strict               as M
-
+import           Linear                         ( V3(..)
+                                                , V4(..)
+                                                )
 
 parse :: (Num a, Enum a, Ord b) => (a -> a -> b) -> String -> Set b
 parse fn =

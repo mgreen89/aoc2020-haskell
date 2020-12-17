@@ -107,4 +107,4 @@ libmain = do
   runDay 14 (print <=< checkRight) [day14a, day14b]
   runDay 15 print                  [day15a, day15b]
   runDay 16 (print <=< checkRight) [day16a, day16b]
-  runDay 17 print [day17a, day17b]
+  runDay 17 print                  [day17a, day17b]

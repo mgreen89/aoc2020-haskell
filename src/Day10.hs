@@ -4,8 +4,6 @@ module Day10
   )
 where
 
--- Hooray, one I can do without hackage!
-
 import           Data.Map                       ( Map )
 import qualified Data.Map                      as M
 import           Data.IntMap                    ( IntMap )
@@ -14,7 +12,7 @@ import           Data.IntSet                    ( IntSet )
 import qualified Data.IntSet                   as IS
 
 freqs :: (Ord a) => [a] -> Map a Int
-freqs = M.fromListWith (+) . fmap (flip (,) 1)
+freqs = M.fromListWith (+) . fmap (, 1)
 
 parse :: String -> IntSet
 parse input = IS.insert (IS.findMax as + 3) as

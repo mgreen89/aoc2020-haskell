@@ -20,17 +20,18 @@ description:         Please see the README on GitHub at <https://github.com/mgre
 
 dependencies:
 - base >= 4.7 && < 5
-- containers >= 0.6
-- criterion >= 1.5
-- deepseq >= 1.4
+- containers
+- criterion
+- deepseq
+- lens
 - linear
 - megaparsec >= 8.0
-- monad-loops >= 0.4
-- mtl >= 1.1
-- parsec >= 3.1
-- primitive >= 0.7
-- split >= 0.2
-- vector >= 0.12
+- monad-loops
+- mtl
+- parsec >= 3.0
+- primitive
+- split
+- vector
 
 library:
   source-dirs: src

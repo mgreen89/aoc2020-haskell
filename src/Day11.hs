@@ -4,43 +4,45 @@ module Day11
   )
 where
 
+import           Control.Lens
 import           Data.Foldable                  ( find )
 import           Data.Maybe                     ( catMaybes
                                                 , mapMaybe
                                                 )
 import           Data.Map                       ( Map )
 import qualified Data.Map                      as M
+import           Linear                         ( R1(..)
+                                                , R2(..)
+                                                , V2(..)
+                                                )
 
-type Point = (Int, Int)
-
-addPoint :: Point -> Point -> Point
-addPoint (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)
+type Point = V2 Int
 
 parse :: String -> Map Point Bool
 parse input = M.fromList $ do
   (y, row) <- zip [0 ..] $ lines input
   (x, c  ) <- zip [0 ..] row
-  (,) (x, y) <$> case c of
+  (,) (V2 x y) <$> case c of
     'L' -> pure False
     '#' -> pure True
     _   -> mempty
 
 directNeighbours :: [Point]
 directNeighbours =
-  [ (dx, dy) | dx <- [-1 .. 1], dy <- [-1 .. 1], dx /= 0 || dy /= 0 ]
+  [ delta | delta <- sequence (pure [-1, 0, 1]), delta /= pure 0 ]
 
 getNeighbours :: Point -> [Point]
-getNeighbours p = fmap (addPoint p) directNeighbours
+getNeighbours p = fmap (+ p) directNeighbours
 
 getLineOfSightNeighbours :: Map Point a -> Point -> [Point]
 getLineOfSightNeighbours field point =
-  let maxX = maximum . fmap fst . M.keys $ field
-      maxY = maximum . fmap snd . M.keys $ field
+  let maxX = maximum . fmap (^. _x) . M.keys $ field
+      maxY = maximum . fmap (^. _y) . M.keys $ field
       getNext start delta =
           find (`M.member` field)
-            . takeWhile (\(x, y) -> x >= 0 && x <= maxX && y >= 0 && y <= maxY)
+            . takeWhile (\(V2 x y) -> x >= 0 && x <= maxX && y >= 0 && y <= maxY)
             . drop 1
-            . iterate (addPoint delta)
+            . iterate (+ delta)
             $ start
   in  mapMaybe (getNext point) directNeighbours
 
