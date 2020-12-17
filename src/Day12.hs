@@ -19,10 +19,6 @@ type Point = V2 Int
 manhattan :: Point -> Int
 manhattan (V2 x y) = abs x + abs y
 
--- My turn is clockwise, perp turns anti-clockwise.
-turn :: Point -> Point
-turn = negate . perp
-
 
 data Instr = Move Point
            | Turn Int
@@ -37,13 +33,13 @@ makeInstr c i = case c of
   'W' -> Move $ V2 (-i) 0
   'F' -> Forward i
   'R' -> case i of
-    90  -> Turn 1
-    180 -> Turn 2
-    270 -> Turn 3
-  'L' -> case i of
     90  -> Turn 3
     180 -> Turn 2
     270 -> Turn 1
+  'L' -> case i of
+    90  -> Turn 1
+    180 -> Turn 2
+    270 -> Turn 3
 
 parse :: String -> [Instr]
 parse = fmap p . lines where
@@ -55,7 +51,7 @@ move :: Instr -> (Point, Point) -> (Point, Point)
 move instr (pos, dir) = case instr of
   Move    delta -> (pos + delta, dir)
   Forward x     -> (pos + x *^ dir, dir)
-  Turn    x     -> (pos, (!! x) . iterate turn $ dir)
+  Turn    x     -> (pos, (!! x) . iterate perp $ dir)
 
 day12a :: String -> Int
 day12a =
@@ -69,7 +65,7 @@ move' :: Instr -> (Point, Point) -> (Point, Point)
 move' instr (pos, wpt) = case instr of
   Move    delta -> (pos, wpt + delta)
   Forward x     -> (pos + x *^ wpt, wpt)
-  Turn    x     -> (pos, (!! x) . iterate turn $ wpt)
+  Turn    x     -> (pos, (!! x) . iterate perp $ wpt)
 
 day12b :: String -> Int
 day12b =
