@@ -86,10 +86,10 @@ runDay day output parts = do
   when (null days || day `elem` days) $ do
     putStrLn $ "Day " ++ show day
     contents <- getDayInput day
-    --putStrLn "Answers:"
+    putStrLn "Answers:"
     mapM_ (output . ($ contents)) parts
-    --putStrLn "\nBenchmarks:"
-    --mapM_ (\p -> benchmark (whnf p contents)) parts
+    putStrLn "\nBenchmarks:"
+    mapM_ (\p -> benchmark (whnf p contents)) parts
     putStrLn ""
 
 libmain :: IO ()

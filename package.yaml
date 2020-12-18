@@ -29,6 +29,7 @@ dependencies:
 - monad-loops
 - mtl
 - parsec >= 3.0
+- parser-combinators
 - primitive
 - split
 - vector
