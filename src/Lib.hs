@@ -60,6 +60,9 @@ import           Day18                          ( day18a
 import           Day19                          ( day19a
                                                 , day19b
                                                 )
+import           Day20                          ( day20a
+                                                , day20b
+                                                )
 
 
 import           Control.DeepSeq                ( NFData )
@@ -116,3 +119,4 @@ libmain = do
   runDay 17 print                  [day17a, day17b]
   runDay 18 (print <=< checkRight) [day18a, day18b]
   runDay 19 (print <=< checkRight) [day19a, day19b]
+  runDay 20 (print <=< checkRight) [day20a, day20b]
