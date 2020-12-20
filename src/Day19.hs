@@ -5,6 +5,7 @@ module Day19
 where
 
 
+import           Control.Monad                  ( ap )
 import qualified Data.Bifunctor                as B
 import           Data.Foldable                  ( foldl' )
 import           Data.IntMap                    ( IntMap )
@@ -21,6 +22,21 @@ data Combo a = Leaf a
              | And [Combo a]
              | Or [Combo a]
   deriving (Show, Eq, Ord)
+
+instance Functor Combo where
+  fmap f (Leaf x ) = Leaf (f x)
+  fmap f (And  xs) = And (fmap (fmap f) xs)
+  fmap f (Or   xs) = Or (fmap (fmap f) xs)
+
+instance Applicative Combo where
+  pure  = Leaf
+  (<*>) = ap
+
+instance Monad Combo where
+  return = pure
+  (Leaf x ) >>= f = f x
+  (And  xs) >>= f = And (fmap (>>= f) xs)
+  (Or   xs) >>= f = Or (fmap (>>= f) xs)
 
 
 data Rule = Const Char
@@ -51,15 +67,9 @@ inputParser = do
 expandRules :: IntMap Rule -> IntMap (Combo Char)
 expandRules mp = res where
   res = fmap go mp
-  go :: Rule -> Combo Char
   go r = case r of
-    Const c -> Leaf c
-    Ref   c -> go' c
-  go' :: Combo Int -> Combo Char
-  go' c = case c of
-    Leaf i  -> go $ mp IM.! i
-    And  is -> And $ fmap go' is
-    Or   is -> Or $ fmap go' is
+    Const c   -> Leaf c
+    Ref   cmb -> cmb >>= (res IM.!)
 
 -- Return all tails from possible matches.
 match :: Combo Char -> String -> [String]
