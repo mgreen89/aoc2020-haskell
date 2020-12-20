@@ -83,11 +83,19 @@ match c s = case c of
 matchAll :: [Combo Char] -> String -> [String]
 matchAll cs s = foldl' go [s] cs where go poss c = concatMap (match c) poss
 
-day19a :: String -> Either String Int
-day19a i = do
-  (rules, msgs) <- B.first P.errorBundlePretty . P.parse inputParser "input" $ i
+
+parse :: String -> Either String (IntMap Rule, [String])
+parse =
+  B.first P.errorBundlePretty . P.parse inputParser "day19"
+
+solve :: IntMap Rule -> [String] -> Int
+solve rules msgs =
   let zero = expandRules rules IM.! 0
-  pure $ length $ filter id $ (any null . match zero) <$> msgs
+  in length . filter id . fmap (any null . match zero) $ msgs
+
+day19a :: String -> Either String Int
+day19a =
+  fmap (uncurry solve) . parse
 
 
 replaceRules :: IntMap Rule
@@ -96,10 +104,6 @@ replaceRules = IM.fromList
   , (11, Ref $ Or [And [Leaf 42, Leaf 31], And [Leaf 42, Leaf 11, Leaf 31]])
   ]
 
-
 day19b :: String -> Either String Int
-day19b i = do
-  (rules, msgs) <- B.first P.errorBundlePretty . P.parse inputParser "input" $ i
-  let rules = IM.union replaceRules rules
-  let zero  = expandRules rules IM.! 0
-  pure $ length $ filter id $ (any null . match zero) <$> msgs
+day19b =
+  fmap (uncurry solve . B.first (IM.union replaceRules)) . parse
