@@ -35,7 +35,7 @@ inputParser = IM.fromList <$> P.sepBy tileParser P.newline
 parse :: String -> Either String (IntMap Tile)
 parse = B.first P.errorBundlePretty . P.parse inputParser "day20"
 
-solveA :: IntMap Tile -> Int
+solveA :: IntMap Tile -> [Int]
 solveA mp =
   {- Don't actually need to bother constructing the full map.
      Instead, find all possible borders for each tile, and count all
@@ -67,10 +67,14 @@ solveA mp =
       idToCount = IM.mapWithKey go mp         where
           go i t = foldl' go' 0 (getPossibilities t)
           go' acc p = if allPossibilities M.! p == 2 then acc + 1 else acc
-  in  product [ i | i <- (fmap fst . IM.toList) mp, idToCount IM.! i == 4 ]
+  in  [ i | i <- (fmap fst . IM.toList) mp, idToCount IM.! i == 4 ]
 
 day20a :: String -> Either String Int
-day20a = fmap solveA . parse
+day20a = product . fmap solveA . parse
+
+monster :: [String]
+monster =
+  ["                  # ", "#    ##    ##    ###", " #  #  #  #  #  #    "]
 
 day20b :: String -> Either String Int
 day20b i = Left "Not implemented"

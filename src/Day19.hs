@@ -85,17 +85,15 @@ matchAll cs s = foldl' go [s] cs where go poss c = concatMap (match c) poss
 
 
 parse :: String -> Either String (IntMap Rule, [String])
-parse =
-  B.first P.errorBundlePretty . P.parse inputParser "day19"
+parse = B.first P.errorBundlePretty . P.parse inputParser "day19"
 
 solve :: IntMap Rule -> [String] -> Int
 solve rules msgs =
   let zero = expandRules rules IM.! 0
-  in length . filter id . fmap (any null . match zero) $ msgs
+  in  length . filter id . fmap (any null . match zero) $ msgs
 
 day19a :: String -> Either String Int
-day19a =
-  fmap (uncurry solve) . parse
+day19a = fmap (uncurry solve) . parse
 
 
 replaceRules :: IntMap Rule
@@ -105,5 +103,4 @@ replaceRules = IM.fromList
   ]
 
 day19b :: String -> Either String Int
-day19b =
-  fmap (uncurry solve . B.first (IM.union replaceRules)) . parse
+day19b = fmap (uncurry solve . B.first (IM.union replaceRules)) . parse
