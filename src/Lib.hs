@@ -63,6 +63,21 @@ import           Day19                          ( day19a
 import           Day20                          ( day20a
                                                 , day20b
                                                 )
+import           Day21                          ( day21a
+                                                , day21b
+                                                )
+import           Day22                          ( day22a
+                                                , day22b
+                                                )
+import           Day23                          ( day23a
+                                                , day23b
+                                                )
+import           Day24                          ( day24a
+                                                , day24b
+                                                )
+import           Day25                          ( day25a
+                                                , day25b
+                                                )
 
 
 import           Control.DeepSeq                ( NFData )
@@ -120,3 +135,8 @@ libmain = do
   runDay 18 (print <=< checkRight) [day18a, day18b]
   runDay 19 (print <=< checkRight) [day19a, day19b]
   runDay 20 (print <=< checkRight) [day20a, day20b]
+  runDay 21 (print <=< checkRight) [day21a, day21b]
+  runDay 22 (print <=< checkRight) [day22a, day22b]
+  runDay 23 (print <=< checkRight) [day23a, day23b]
+  runDay 24 (print <=< checkRight) [day24a, day24b]
+  runDay 25 (print <=< checkRight) [day25a, day25b]
