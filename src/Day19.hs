@@ -80,5 +80,16 @@ day19a i = do
   pure $ length $ filter id $ (any null . match zero) <$> msgs
 
 
+replaceRules :: IntMap Rule
+replaceRules = IM.fromList
+  [ (8 , Ref $ Or [Leaf 42, And [Leaf 42, Leaf 8]])
+  , (11, Ref $ Or [And [Leaf 42, Leaf 31], And [Leaf 42, Leaf 11, Leaf 31]])
+  ]
+
+
 day19b :: String -> Either String Int
-day19b i = Left "Not implemented"
+day19b i = do
+  (rules, msgs) <- B.first P.errorBundlePretty . P.parse inputParser "input" $ i
+  let rules = IM.union replaceRules rules
+  let zero  = expandRules rules IM.! 0
+  pure $ length $ filter id $ (any null . match zero) <$> msgs
