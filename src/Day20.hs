@@ -6,6 +6,7 @@ module Day20
   )
 where
 
+import           Control.Applicative            ( (<**>) )
 import qualified Data.Bifunctor                as B
 import           Data.Foldable                  ( foldl' )
 import           Data.IntMap                    ( IntMap )
@@ -35,6 +36,12 @@ inputParser = IM.fromList <$> P.sepBy tileParser P.newline
 parse :: String -> Either String (IntMap Tile)
 parse = B.first P.errorBundlePretty . P.parse inputParser "day20"
 
+getBorders :: Tile -> [String]
+getBorders (Tile c) =
+  -- <**> is (flip <*>)
+  -- `last` is not particularly efficient but list are only 12 long
+  [c] <**> [id, transpose] <**> [head, last] <**> [id, reverse]
+
 solveA :: IntMap Tile -> [Int]
 solveA mp =
   {- Don't actually need to bother constructing the full map.
@@ -47,30 +54,18 @@ solveA mp =
      that have only two borders (i.e. four entries - two borders both
      forward and backward remember) - these are the corners.
   -}
-  let getPossibilities (Tile c) =
-          -- Yes, this sucks. Make it better later.
-          [ head c
-          , last c
-          , head . transpose $ c
-          , last . transpose $ c
-          , reverse . head $ c
-          , reverse . last $ c
-          , reverse . head . transpose $ c
-          , reverse . last . transpose $ c
-          ]
-
-      allPossibilities = foldl'
+  let allPossibilities = foldl'
         (\acc s -> M.unionWith (+) (M.singleton s 1) acc)
         M.empty
-        (concatMap (getPossibilities . snd) . IM.toList $ mp)
+        (concatMap (getBorders . snd) . IM.toList $ mp)
 
       idToCount = IM.mapWithKey go mp         where
-          go i t = foldl' go' 0 (getPossibilities t)
+          go i t = foldl' go' 0 (getBorders t)
           go' acc p = if allPossibilities M.! p == 2 then acc + 1 else acc
   in  [ i | i <- (fmap fst . IM.toList) mp, idToCount IM.! i == 4 ]
 
 day20a :: String -> Either String Int
-day20a = product . fmap solveA . parse
+day20a = fmap (product . solveA) . parse
 
 monster :: [String]
 monster =
