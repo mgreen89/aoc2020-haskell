@@ -1,8 +1,7 @@
 module Day22
   ( day22a
   , day22b
-  )
-where
+  ) where
 
 import qualified Data.Bifunctor                as B
 import           Data.Foldable                  ( toList )
@@ -54,17 +53,31 @@ playB seen one two
   | HS.member (toList one, toList two) seen = (P1, one)
   | otherwise = case (one, two) of
     (x :<| xs, y :<| ys) ->
-      let recurse = do
-            xs' <- takeExactly x xs
-            ys' <- takeExactly y ys
-            pure . fst $ playB HS.empty xs' ys'
-          winner = case recurse of
-            Just p  -> p
-            Nothing -> if x > y then P1 else P2
-          seen' = HS.insert (toList one, toList two) seen
-      in  case winner of
-            P1 -> playB seen' (xs :|> x :|> y) ys
-            P2 -> playB seen' xs (ys :|> y :|> x)
+      let
+        recurse = do
+          xs' <- takeExactly x xs
+          ys' <- takeExactly y ys
+          -- If player 1 has the highest card, either:
+          --  - player 1 wins all the cards
+          --  - player 2 wins all the cards except the unbeatable card,
+          --    which means the game has to repeat state.
+          -- Therefore if player one has the highest card, they will
+          -- always win.
+          --
+          -- If player 2 has an unbeatable card, can't tell if the game
+          -- will loop forever or player 2 will win, so actually have to
+          -- recurse.
+          pure $ if maximum xs' > maximum ys'
+            then P1
+            else fst $ playB HS.empty xs' ys'
+        winner = case recurse of
+          Just p  -> p
+          Nothing -> if x > y then P1 else P2
+        seen' = HS.insert (toList one, toList two) seen
+      in
+        case winner of
+          P1 -> playB seen' (xs :|> x :|> y) ys
+          P2 -> playB seen' xs (ys :|> y :|> x)
     (Empty, _    ) -> (P2, two)
     (_    , Empty) -> (P1, one)
 
