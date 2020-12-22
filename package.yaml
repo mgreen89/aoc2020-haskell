@@ -28,10 +28,12 @@ dependencies:
 - megaparsec >= 8.0
 - monad-loops
 - mtl
+- nonempty-containers
 - parsec >= 3.0
 - parser-combinators
 - primitive
 - split
+- unordered-containers
 - vector
 
 library:
