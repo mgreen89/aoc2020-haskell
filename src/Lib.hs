@@ -118,7 +118,7 @@ libmain = do
   runDay 1  print                  [day1a, day1b]
   runDay 2  (print <=< checkRight) [day2a, day2b]
   runDay 3  print                  [day3a, day3b]
-  runDay 4  (print <=< checkRight) [day4a, day4b] -- Not done day 4 (not really my jam)
+  runDay 4  (print <=< checkRight) [day4a, day4b]
   runDay 5  (print <=< checkRight) [day5a, day5b]
   runDay 6  print                  [day6a, day6b]
   runDay 7  (print <=< checkRight) [day7a, day7b]
