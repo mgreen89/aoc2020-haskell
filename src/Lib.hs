@@ -110,7 +110,7 @@ runDay day output parts = do
     --putStrLn "Answers:"
     mapM_ (output . ($ contents)) parts
     --putStrLn "\nBenchmarks:"
-    --mapM_ (\p -> benchmark (whnf p contents)) parts
+    --mapM_ (\p -> benchmark (nf p contents)) parts
     putStrLn ""
 
 libmain :: IO ()
