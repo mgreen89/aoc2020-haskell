@@ -4,7 +4,7 @@ module Day23
   )
 where
 
-import           Debug.Trace                    ( traceShowId )
+import           Debug.Trace                    ( traceShow, traceShowId )
 
 import           Data.Sequence                  ( Seq(..)
                                                 , (<|)
@@ -33,8 +33,8 @@ move start =
 
 day23a :: String -> Either String String
 day23a i =
-  let finalCups  = (!! 100 ) . iterate move . parse $ i
-      doubleCups = finalCups Seq.>< finalCups
+  let finalCups  = (!! 100) . iterate move . parse $ i
+      doubleCups = finalCups >< finalCups
   in  Right
         . concatMap show
         . Seq.takeWhileL (/= 1)
@@ -43,4 +43,14 @@ day23a i =
         $ doubleCups
 
 day23b :: String -> Either String String
-day23b i = Left "Not implemented"
+day23b i =
+  let parsed    = parse i
+      fullSeq   = parsed >< Seq.fromList [(maximum parsed + 1) .. 1000000]
+      finalCups = (!! 20) . iterate move $ fullSeq
+  in  Right
+        .  concatMap show
+        .  Seq.take 2
+        .  Seq.drop 1
+        .  Seq.dropWhileL (/= 1)
+        $  finalCups
+        >< finalCups
