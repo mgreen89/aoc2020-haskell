@@ -5,7 +5,6 @@ module Day20
   , day20b
   ) where
 
-import           Control.Applicative            ( (<**>) )
 import qualified Data.Bifunctor                as B
 import           Data.Bits                      ( (.&.) )
 import           Data.Bool                      ( bool )
@@ -24,54 +23,22 @@ import qualified Text.Megaparsec.Char.Lexer    as L
 
 type Parser = P.Parsec Void String
 
-newtype Tile = Tile { tContent :: [String] }
-  deriving (Show)
+type Tile = [String]
+
+data Transform = Tr Bool Int
+  deriving (Show, Eq, Ord)
 
 tileParser :: Parser (Int, Tile)
 tileParser = do
   tId      <- P.string "Tile " *> L.decimal <* P.char ':' <* P.space
   tContent <- P.sepEndBy (P.some (P.choice [P.char '.', P.char '#'])) P.newline
-  pure (tId, Tile { .. })
+  pure (tId, tContent)
 
 inputParser :: Parser (IntMap Tile)
 inputParser = IM.fromList <$> P.sepBy tileParser P.newline
 
 parse :: String -> Either String (IntMap Tile)
 parse = B.first P.errorBundlePretty . P.parse inputParser "day20"
-
-getBorders :: Tile -> [String]
-getBorders (Tile c) =
-  -- <**> is (flip <*>)
-  -- `last` is not particularly efficient but list are only 12 long
-  [c] <**> [id, transpose] <**> [head, last] <**> [id, reverse]
-
-solveA :: IntMap Tile -> [Int]
-solveA mp =
-  {- Don't actually need to bother constructing the full map.
-     Instead, find all possible borders for each tile, and count all
-     the appearances of each possibility. Assuming all joined borders are
-     unique, all the possibilites that are actually borders will appear
-     twice - once for each tile they appear on, and will appear forwards
-     and backwards.
-     Then iterate through the tiles again, finding the only four tiles
-     that have only two borders (i.e. four entries - two borders both
-     forward and backward remember) - these are the corners.
-  -}
-  let allPossibilities = foldl'
-        (\acc s -> M.unionWith (+) (M.singleton s 1) acc)
-        M.empty
-        (concatMap (getBorders . snd) . IM.toList $ mp)
-
-      idToCount = IM.mapWithKey go mp         where
-          go i t = foldl' go' 0 (getBorders t)
-          go' acc p = if allPossibilities M.! p == 2 then acc + 1 else acc
-  in  [ i | i <- (fmap fst . IM.toList) mp, idToCount IM.! i == 4 ]
-
-day20a :: String -> Either String Int
-day20a = fmap (product . solveA) . parse
-
-data Transform = Tr Bool Int
-  deriving (Show, Eq, Ord)
 
 -- A rotation is a reverse and a transpose.
 rotate :: Int -> [[a]] -> [[a]]
@@ -84,7 +51,47 @@ transform :: Transform -> [[a]] -> [[a]]
 transform (Tr False n) = rotate n
 transform (Tr True  n) = rotate n . reverse
 
+getTransforms :: [[a]] -> [[[a]]]
 getTransforms t = [ transform tr t | tr <- transforms ]
+
+getBorders :: [[a]] -> [[a]]
+getBorders = fmap head . getTransforms
+
+-- Get a map of top border to (tile id, tile contents)
+getBorderMap :: IntMap Tile -> Map String [(Int, [String])]
+getBorderMap =
+  IM.foldlWithKey' go M.empty     where
+    go acc tId t = M.unionWith
+      (++)
+      (M.fromList [ (head tC, [(tId, tC)]) | tC <- getTransforms t ])
+      acc
+
+findCorners :: IntMap Tile -> [Int]
+findCorners mp =
+  let
+    {- Find all the corners by finding all possible edges.
+       Then find the edges that are only present on one tile.
+       Then, for each tile that has any of those edges, find the tiles
+       that have _two_ unique edges - this will only happen at the corners.
+    -}
+    borderMap = getBorderMap mp
+    uniqueEdges = M.filter ((== 1) . length) borderMap
+
+    -- Get a map from tId to unique edges.
+    idToUnique = M.foldlWithKey' go M.empty uniqueEdges where
+      go a b ((tId, _) : []) = M.unionWith (++) (M.singleton tId [b]) a
+
+    -- Find all the IDs with 4 unique edges (which is really
+    -- 2 edges * 2 orientations).
+    corners = M.keys . M.filter ((== 4) . length) $ idToUnique
+  in corners
+
+{- Part A.
+   Don't actually need to bother constructing the full map - just need to
+   find the corners.
+-}
+day20a :: String -> Either String Int
+day20a = fmap (product . findCorners) . parse
 
 getSig :: [String] -> Int
 getSig =
@@ -94,6 +101,7 @@ monster :: [String]
 monster =
   ["                  # ", "#    ##    ##    ###", " #  #  #  #  #  #    "]
 
+monsterSig :: Int
 monsterSig = getSig monster
 
 findMonsters :: [String] -> Int
@@ -109,32 +117,27 @@ findMonsters ss = findMonsters' ss ss where
 
 solveB mp =
   let
-    borderMap :: Map String [(Int, [String])]
-    borderMap = IM.foldlWithKey' go M.empty mp     where
-      go acc tId (Tile t) = M.unionWith
-        (++)
-        (M.fromList [ (head tC, [(tId, tC)]) | tC <- getTransforms t ])
-        acc
+    borderMap = getBorderMap mp
 
-    -- Whose stupid idea was the record! :(
-    startId    = head (solveA mp)
-    (Tile stc) = mp IM.! startId
+    startId    = head (findCorners mp)
+    startContent  = mp IM.! startId
 
-    -- Want to orient the tile s.t. the borders with other tiles are on the bottom and right.
+    -- Want to orient the tile s.t. the borders with other tiles are on the
+    -- bottom and right.
     -- Can check if the border is shared by looking in the border map:
-    --   if the border maps to on tile, it's not shared.
+    --   if the border maps to one tile, it's not shared.
     --   if the border maps to two tiles, it's shared.
     -- Since we don't really care about flipping orientation:
     --  if the border on the top matches, flip the tile vertically.
     --  if the corder on the left matches, flip the tile horizontally.
     startTileTfs =
-      [ if length (borderMap M.! head stc) == 2 then reverse else id
-      , if length (borderMap M.! (head . transpose $ stc)) == 2
+      [ if length (borderMap M.! head startContent) == 2 then reverse else id
+      , if length (borderMap M.! (head . transpose $ startContent)) == 2
         then fmap reverse
         else id
       ]
 
-    startTile = foldl' (.) id startTileTfs stc
+    startTile = foldl' (.) id startTileTfs startContent
 
     belowTiles (tId, tC) =
       case filter ((/= tId) . fst) $ borderMap M.! last tC of
