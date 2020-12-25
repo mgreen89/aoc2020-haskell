@@ -1,7 +1,6 @@
 module Lib
   ( libmain
-  )
-where
+  ) where
 
 import           Day01                          ( day1a
                                                 , day1b
@@ -75,9 +74,7 @@ import           Day23                          ( day23a
 import           Day24                          ( day24a
                                                 , day24b
                                                 )
-import           Day25                          ( day25a
-                                                , day25b
-                                                )
+import           Day25                          ( day25a )
 
 
 import           Control.DeepSeq                ( NFData )
@@ -139,4 +136,4 @@ libmain = do
   runDay 22 (print <=< checkRight) [day22a, day22b]
   runDay 23 (print <=< checkRight) [day23a, day23b]
   runDay 24 (print <=< checkRight) [day24a, day24b]
-  runDay 25 (print <=< checkRight) [day25a, day25b]
+  runDay 25 (print <=< checkRight) [day25a]
