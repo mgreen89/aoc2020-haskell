@@ -4,8 +4,8 @@ module Day23
   )
 where
 
-import           Debug.Trace
-
+import           Control.Monad
+import           Control.Monad.ST
 import           Data.Foldable                  ( toList )
 import           Data.IntMap.Strict             ( IntMap )
 import qualified Data.IntMap.Strict            as IM
@@ -15,6 +15,7 @@ import           Data.Sequence                  ( Seq(..)
                                                 , (><)
                                                 )
 import qualified Data.Sequence                 as Seq
+import qualified Data.Vector.Unboxed.Mutable   as V
 
 type Cups = Seq Int
 
@@ -70,10 +71,9 @@ moveB curr mp =
       tgtNext = mp IM.! tgt
   in  IM.union (IM.fromList [(tgt, a), (c, tgtNext), (curr, d)]) mp
 
-day23b :: String -> Either String String
-day23b i =
-  let parsed           = parse i
-      pList            = toList parsed
+solveB :: Cups -> Int
+solveB parsed =
+  let pList            = toList parsed
       (_     :|> last) = parsed
       (first :<| _   ) = parsed
       maxIn            = maximum pList
@@ -89,4 +89,46 @@ day23b i =
 
       ans1 = finished IM.! 1
       ans2 = finished IM.! ans1
-  in  Right . show . product $ [ans1, ans2]
+  in  ans1 * ans2
+
+{- Let's try the implementation with a mutable vector in the state monad. -}
+moveB' :: Int -> V.MVector s Int -> ST s Int
+moveB' curr v = do
+  a <- V.read v curr
+  b <- V.read v a
+  c <- V.read v b
+  d <- V.read v c
+  let tgt = until (\x -> x /= 0 && x /= a && x /= b && x /= c)
+                  (\x -> if x <= 1 then topB else x - 1)
+                  (curr - 1)
+  tgtNext <- V.read v tgt
+  V.write v curr d
+  V.write v tgt a
+  V.write v c tgtNext
+  return d
+
+runB' :: Int -> Int -> V.MVector s Int -> ST s ()
+runB' 0     _ _ = return ()
+runB' iters c v = do
+  n <- moveB' c v
+  runB' (iters - 1) n v
+
+solveB' :: Cups -> Int
+solveB' parsed =
+  let pList            = toList parsed
+      (_     :|> last) = parsed
+      (first :<| _   ) = parsed
+      maxIn            = maximum pList
+  in  runST $ do
+        v <- V.new (topB + 1)
+        forM_ (zip pList (drop 1 pList)) (uncurry $ V.write v)
+        forM_ (zip (last : [maxIn + 1 .. topB]) [maxIn + 1 .. topB])
+              (uncurry $ V.write v)
+        V.write v topB first
+        runB' itersB first v
+        ans1 <- V.read v 1
+        ans2 <- V.read v ans1
+        return $ ans1 * ans2
+
+day23b :: String -> Either String String
+day23b = Right . show . solveB' . parse
